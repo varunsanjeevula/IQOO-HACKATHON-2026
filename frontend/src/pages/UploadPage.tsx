@@ -14,9 +14,10 @@ export function UploadPage() {
   const [processStep, setProcessStep] = useState(0);
   const [uploadComplete, setUploadComplete] = useState(false);
   const [resultId, setResultId] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState('');
 
   const { mutateAsync: uploadMemory } = useUpload();
-  const { privacySettings } = useAppStore();
+  const { privacySettings, isPaused } = useAppStore();
 
   const processSteps = [
     "📎 Uploading your memory...",
@@ -33,11 +34,16 @@ export function UploadPage() {
   };
 
   const handleUpload = async (selectedFile: File) => {
-    const isImage = selectedFile.type.startsWith('image/');
-    if ((isImage && !privacySettings.photos) || (!isImage && !privacySettings.documents)) {
-      window.alert('This document type is disabled in Privacy Controls.');
+    if (isPaused) {
+      setUploadError('Recall is paused. Resume it in Settings before adding a memory.');
       return;
     }
+    const isImage = selectedFile.type.startsWith('image/');
+    if ((isImage && !privacySettings.photos) || (!isImage && !privacySettings.documents)) {
+      setUploadError('This document type is disabled in Privacy Controls.');
+      return;
+    }
+    setUploadError('');
     setFile(selectedFile);
     setIsProcessing(true);
     setUploadComplete(false);
@@ -62,7 +68,7 @@ export function UploadPage() {
     } catch (error) {
       console.error(error);
       setIsProcessing(false);
-      alert("Failed to upload memory");
+      setUploadError('Failed to upload memory. Please check the file and try again.');
     }
   };
 
@@ -99,7 +105,7 @@ export function UploadPage() {
               </label>
 
               <label className="cursor-pointer h-full">
-                <input type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={handleFileChange} />
+                <input type="file" accept=".pdf,application/pdf" className="hidden" onChange={handleFileChange} />
                 <Card className="hover:border-primary/50 transition-all h-full">
                   <CardContent className="p-6 flex flex-col items-center justify-center text-center gap-3 h-full">
                     <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
@@ -143,6 +149,7 @@ export function UploadPage() {
                 <p className="text-sm text-muted-foreground">or click to browse files</p>
               </div>
             </div>
+            {uploadError && <p className="text-sm text-destructive text-center" role="alert">{uploadError}</p>}
           </motion.div>
 
         ) : isProcessing ? (

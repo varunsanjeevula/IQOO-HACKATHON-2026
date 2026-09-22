@@ -5,13 +5,11 @@ import { Switch } from '@/components/ui/switch';
 import { useInsights } from '@/hooks/useInsights';
 import { api } from '@/services/api';
 import { useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
 
 export function ProfilePage() {
-  const { demoMode, setDemoMode, privacySettings, togglePrivacySetting } = useAppStore();
+  const { demoMode, setDemoMode, privacySettings, togglePrivacySetting, isPaused, setPaused } = useAppStore();
   const { data: insights } = useInsights();
   const queryClient = useQueryClient();
-  const [isPaused, setIsPaused] = useState(false);
 
   const handleDeleteAll = async () => {
     if (!window.confirm('Delete all memories and reminders? This cannot be undone.')) return;
@@ -138,7 +136,7 @@ export function ProfilePage() {
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Data Management</h2>
         <Card>
           <CardContent className="p-0 divide-y">
-            <button className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors" onClick={() => setIsPaused((paused) => !paused)}>
+            <button className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors" onClick={() => setPaused(!isPaused)}>
               <div className="flex items-center gap-3">
                 <Power className="h-5 w-5 text-muted-foreground" />
                 <div className="text-left">
@@ -153,7 +151,7 @@ export function ProfilePage() {
                 <Download className="h-5 w-5 text-muted-foreground" />
                 <div className="text-left">
                   <h4 className="font-medium">Export Memories</h4>
-                  <p className="text-xs text-muted-foreground">Download all your data as ZIP</p>
+                  <p className="text-xs text-muted-foreground">Download all your data as JSON</p>
                 </div>
               </div>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
