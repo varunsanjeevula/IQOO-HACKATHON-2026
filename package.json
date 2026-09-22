@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "AI-Powered Personal Memory & Life Assistant",
   "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
   "engines": {
     "node": "20.x"
   },
