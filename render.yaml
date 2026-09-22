@@ -3,7 +3,7 @@ services:
     name: recall-api
     runtime: node
     rootDir: backend
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci --workspace backend && npm run build --workspace backend
     startCommand: npm run start
     healthCheckPath: /health
     envVars:
@@ -23,7 +23,7 @@ services:
     name: recall-web
     runtime: static
     rootDir: frontend
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci --workspace frontend && npm run build --workspace frontend
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
