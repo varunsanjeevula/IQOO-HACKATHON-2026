@@ -9,7 +9,12 @@ class ApiService {
 
   private getApiOrigin() {
     const configuredUrl = import.meta.env.VITE_API_URL?.trim();
-    if (!configuredUrl) return 'http://localhost:3001';
+    if (!configuredUrl || configuredUrl === 'recall-api' || configuredUrl === 'http://recall-api') {
+      if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+        return window.location.origin;
+      }
+      return 'http://localhost:3001';
+    }
     return configuredUrl.startsWith('http') ? configuredUrl.replace(/\/$/, '') : `https://${configuredUrl}`;
   }
 

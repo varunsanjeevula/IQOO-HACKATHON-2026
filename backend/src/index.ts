@@ -18,14 +18,20 @@ import { errorHandler } from './middleware/error-handler';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
-  .split(',')
-  .map((origin) => origin.trim())
-  .filter(Boolean)
-  .flatMap((origin) => origin.startsWith('http') ? [origin] : [`https://${origin}`, `http://${origin}`]);
+const corsOriginEnv = process.env.CORS_ORIGIN?.trim();
+const corsOptions: cors.CorsOptions = {
+  origin: (!corsOriginEnv || corsOriginEnv === '*')
+    ? true
+    : corsOriginEnv
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter(Boolean)
+        .flatMap((origin) => origin.startsWith('http') ? [origin] : [`https://${origin}`, `http://${origin}`]),
+  credentials: true,
+};
 
 // Middlewares
-app.use(cors({ origin: allowedOrigins }));
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
@@ -42,6 +48,23 @@ app.use('/api/insights', insightsRouter);
 
 // Global Error Handler
 app.use(errorHandler);
+
+// Serve frontend static build if present
+const frontendDist = path.resolve(process.cwd(), '../frontend/dist');
+const altFrontendDist = path.resolve(process.cwd(), 'frontend/dist');
+const distPath = fs.existsSync(frontendDist)
+  ? frontendDist
+  : (fs.existsSync(altFrontendDist) ? altFrontendDist : null);
+
+if (distPath) {
+  app.use(express.static(distPath));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/uploads') || req.path === '/health') {
+      return next();
+    }
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
 
 // Ensure uploads dir exists
 const uploadsDir = path.join(process.cwd(), 'uploads');

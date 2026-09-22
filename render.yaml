@@ -3,19 +3,18 @@ services:
     name: recall-api
     runtime: node
     rootDir: backend
-    buildCommand: npm ci --workspace backend && npm run build --workspace backend
+    buildCommand: npm install && npm run build
     startCommand: npm run start
     healthCheckPath: /health
     envVars:
+      - key: NODE_VERSION
+        value: 20
       - key: NODE_ENV
         value: production
       - key: DEMO_MODE
         value: true
       - key: CORS_ORIGIN
-        fromService:
-          type: web
-          name: recall-web
-          property: host
+        value: "*"
       - key: GEMINI_API_KEY
         sync: false
 
@@ -23,11 +22,14 @@ services:
     name: recall-web
     runtime: static
     rootDir: frontend
-    buildCommand: npm ci --workspace frontend && npm run build --workspace frontend
+    buildCommand: npm install && npm run build
     staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
+      - key: NODE_VERSION
+        value: 20
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: recall-api
-          property: host
+        sync: false
